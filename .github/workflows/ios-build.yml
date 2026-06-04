@@ -22,8 +22,16 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build IPA
-        run: flutter build ipa --no-codesign
+      - name: Build iOS App
+        run: flutter build ios --release --no-codesign
+
+      - name: Create IPA (Manual Packaging)
+        run: |
+          mkdir -p Payload
+          mv build/ios/iphoneos/Runner.app Payload/
+          zip -r HamaldVTU.ipa Payload
+          mkdir -p build/ios/ipa
+          mv HamaldVTU.ipa build/ios/ipa/
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
