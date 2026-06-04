@@ -24,15 +24,21 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+          cd ..
+
       - name: Build iOS App
         run: |
           flutter build ios --release --no-codesign \
-            --extra-gen-snapshot-options="--no-codesign" \
-            --extra-front-end-options="--no-codesign"
+            --build-number=${{ github.run_number }}
         env:
           CODE_SIGNING_ALLOWED: "NO"
           CODE_SIGNING_REQUIRED: "NO"
           CODE_SIGN_IDENTITY: ""
+          DEVELOPMENT_TEAM: ""
 
       - name: Create IPA (Manual Packaging)
         run: |

@@ -214,6 +214,14 @@ class ApiService {
     return await _dio.get('get-tickets.php', queryParameters: {'userId': userId});
   }
 
+  Future<Response> getAdminStats(String adminId, String fromDate, String toDate) async {
+    return await _dio.get('admin-stats.php', queryParameters: {
+      'adminId': adminId,
+      'fromDate': fromDate,
+      'toDate': toDate,
+    });
+  }
+
   Future<Response> createTicket(String userId, String subject, String message, String priority) async {
     return await _dio.post('create-ticket.php', data: {
       'userId': userId,

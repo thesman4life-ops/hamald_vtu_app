@@ -28,6 +28,9 @@ import 'support_screen.dart';
 import 'pin_setup_screen.dart';
 import 'login_screen.dart';
 import 'verification_screen.dart';
+import 'faq_screen.dart';
+import 'about_screen.dart';
+import 'admin_dashboard_screen.dart';
 import '../widgets/fund_account_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -644,6 +647,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _drawerItem(Icons.history, 'Reward History', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RewardHistoryScreen()))),
           _drawerItem(Icons.security, 'PIN Setup', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PinSetupScreen()))),
           _drawerItem(Icons.support_agent_outlined, 'Support Desk', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen()))),
+          _drawerItem(Icons.help_outline, 'FAQ', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FaqScreen()))),
+          if (auth.user?.userId == '1')
+            _drawerItem(Icons.admin_panel_settings_outlined, 'Admin Dashboard', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminDashboardScreen()))),
+          _drawerItem(Icons.info_outline, 'About Dev', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()))),
           const Divider(),
           _drawerItem(Icons.logout, 'Logout', () => _showLogoutDialog(context, auth), color: AppColors.errorRed),
           const Spacer(),
