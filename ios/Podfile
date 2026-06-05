@@ -1,0 +1,44 @@
+# Uncomment this line to define a global platform for your project
+platform :ios, '13.0'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = '1'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Release' => :release,
+  'Profile' => :profile,
+}
+
+def flutter_install_all_ios_pods(ios_application_path = nil)
+  native_add_itions_path = File.join(ios_application_path, 'Flutter', 'ephemeral', 'Packages', 'Flutter')
+  File.open(File.join(native_add_itions_path, '..', '..', '..', 'Generated.xcconfig'), 'r') do |file|
+    file.each_line do |line|
+      line.match(/\s*FLUTTER_FRAMEWORK_DIR\s*=\s*(.*)\s*/) do |match|
+        $flutter_framework_dir = match[1]
+      end
+    end
+  end
+
+  pod 'Flutter', :path => File.join($flutter_framework_dir, 'Flutter.podspec')
+end
+
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+    end
+  end
+end
