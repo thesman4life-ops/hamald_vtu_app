@@ -12,12 +12,23 @@ project 'Runner', {
 
 def flutter_install_all_ios_pods(ios_application_path = nil)
   native_add_itions_path = File.join(ios_application_path, 'Flutter', 'ephemeral', 'Packages', 'Flutter')
-  File.open(File.join(native_add_itions_path, '..', '..', '..', 'Generated.xcconfig'), 'r') do |file|
-    file.each_line do |line|
-      line.match(/\s*FLUTTER_FRAMEWORK_DIR\s*=\s*(.*)\s*/) do |match|
-        $flutter_framework_dir = match[1]
+  # Use a safer way to read the xcconfig if it exists
+  xcconfig_path = File.join(ios_application_path, 'Flutter', 'Generated.xcconfig')
+  if File.exist?(xcconfig_path)
+    File.open(xcconfig_path, 'r') do |file|
+      file.each_line do |line|
+        line.match(/\s*FLUTTER_FRAMEWORK_DIR\s*=\s*(.*)\s*/) do |match|
+          $flutter_framework_dir = match[1]
+        end
       end
     end
+  end
+
+  # Fallback if the file didn't exist or didn't match
+  if $flutter_framework_dir.nil?
+     # If we are in SPM mode, we might not need this pod at all,
+     # but we'll try to let Flutter handle it.
+     return
   end
 
   pod 'Flutter', :path => File.join($flutter_framework_dir, 'Flutter.podspec')
@@ -35,7 +46,6 @@ end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
-    flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
       config.build_settings['ENABLE_BITCODE'] = 'NO'
