@@ -3,36 +3,40 @@ platform :ios, '13.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = '1'
 
-# Fix for CocoaPods 1.15+ TypeError: no implicit conversion of nil into Hash
+# Fix for CocoaPods 1.15+ mapping and 1.16+ :head removal
 project 'Runner',
   'Debug' => :debug,
   'Release' => :release,
   'Profile' => :release
 
 def flutter_install_all_ios_pods(ios_application_path = nil)
-  ios_application_path ||= File.dirname(File.realpath(__FILE__))
-  # Path to the Generated.xcconfig
+  ios_application_path ||= File.expand_path('..', __FILE__)
   config_path = File.join(ios_application_path, 'Flutter', 'Generated.xcconfig')
 
-  if !File.exist?(config_path)
-    # If the file doesn't exist yet, we can't determine the Flutter SDK path.
-    # However, CocoaPods needs at least one dependency to avoid the "no dependencies" error.
-    # We use a dummy dependency if necessary, but 'Flutter' is better if it can be found.
-    pod 'Flutter', :head
-    return
-  end
+  # 1. Try to find path from Generated.xcconfig
+  if File.exist?(config_path)
+    flutter_framework_dir = nil
+    File.foreach(config_path) do |line|
+      if match = line.match(/\s*FLUTTER_FRAMEWORK_DIR\s*=\s*(.*)\s*/)
+        flutter_framework_dir = match[1].strip
+      end
+    end
 
-  flutter_framework_dir = nil
-  File.foreach(config_path) do |line|
-    if match = line.match(/\s*FLUTTER_FRAMEWORK_DIR\s*=\s*(.*)\s*/)
-      flutter_framework_dir = match[1].strip
+    if flutter_framework_dir && !flutter_framework_dir.empty?
+      pod 'Flutter', :path => File.join(flutter_framework_dir, 'Flutter.podspec')
+      return
     end
   end
 
-  if flutter_framework_dir && !flutter_framework_dir.empty?
-    pod 'Flutter', :path => File.join(flutter_framework_dir, 'Flutter.podspec')
-  else
-    pod 'Flutter', :head
+  # 2. Fallback to common ephemeral locations (Fixes "no dependencies" without using :head)
+  [
+    File.join(ios_application_path, 'Flutter', 'ephemeral', 'Flutter.podspec'),
+    File.join(ios_application_path, 'Flutter', 'Flutter.podspec')
+  ].each do |path|
+    if File.exist?(path)
+      pod 'Flutter', :path => path
+      return
+    end
   end
 end
 
